@@ -33,7 +33,7 @@ const fieldNames = getFields(info, {
 })
 
 // Output
-// fieldNames = { userId: 1, id: 1, title: 1, details: { description: 1 } }
+// fieldNames = { userId: 1, id: 1, title: 1, 'details.description': 1 }
 ```
 
 ### Params
