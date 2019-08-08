@@ -8,24 +8,24 @@ const _ = require('lodash');
  * @returns
  */
 function getDirective(directive, variableValues) {
-	const { name, arguments: args } = directive;
-	const arg = args[0];
-	let directiveValue;
+  const { name, arguments: args } = directive;
+  const arg = args[0];
+  let directiveValue;
 
-	switch (arg.value.kind) {
-		case 'Variable':
-			directiveValue = variableValues[arg.value.name.value];
-			break;
-		case 'BooleanValue':
-			directiveValue = arg.value.value;
-			break;
-		default:
-			return directiveValue;
-	}
+  switch (arg.value.kind) {
+    case 'Variable':
+      directiveValue = variableValues[arg.value.name.value];
+      break;
+    case 'BooleanValue':
+      directiveValue = arg.value.value;
+      break;
+    default:
+      return directiveValue;
+  }
 
-	return {
-		[name.value]: directiveValue
-	};
+  return {
+    [name.value]: directiveValue
+  };
 }
 
 /**
@@ -38,71 +38,66 @@ function getDirective(directive, variableValues) {
  * @returns
  */
 function getFields(field, initial, parentName, variableValues) {
-	const { kind, selectionSet } = field;
+  const { kind, selectionSet } = field;
 
-	if (kind === 'Field') {
-		if (selectionSet && selectionSet.selections) {
-			for (let index = 0; index < selectionSet.selections.length; index++) {
-				const selection = selectionSet.selections[index];
-				const { directives = [] } = selection;
+  if (kind === 'Field') {
+    if (selectionSet && selectionSet.selections) {
+      for (let index = 0; index < selectionSet.selections.length; index++) {
+        const selection = selectionSet.selections[index];
+        const { directives = [] } = selection;
 
-				if (directives.length) {
-					let ignore = false;
+        if (directives.length) {
+          let ignore = false;
 
-					for (let i = 0; i < directives.length; i++) {
-						const directive = getDirective(directives[i], variableValues);
+          for (let i = 0; i < directives.length; i++) {
+            const directive = getDirective(directives[i], variableValues);
 
-						if (directive) {
-							const { skip, include } = directive;
-							if (skip === true || include === false) {
-								ignore = true;
+            if (directive) {
+              const { skip, include } = directive;
+              if (skip === true || include === false) {
+                ignore = true;
 
-								// exit current directives loop
-								break;
-							}
-						}
-					}
+                // exit current directives loop
+                break;
+              }
+            }
+          }
 
-					if (ignore === true) {
-						// move to next selection
-						// not run code below
-						continue;
-					}
-				}
+          if (ignore === true) {
+            // move to next selection
+            // not run code below
+            continue;
+          }
+        }
 
-				const resultRecursive = getFields(
-					selection,
-					{},
-					selection.name.value,
-					variableValues
-				);
+        const resultRecursive = getFields(selection, {}, selection.name.value, variableValues);
 
-				switch (typeof resultRecursive) {
-					case 'object':
-						initial = {
-							...initial,
-							...resultRecursive
-						};
-						break;
-					case 'number':
-						const dotAnotation = parentName
-							? parentName + '.' + selection.name.value
-							: selection.name.value;
-						initial = {
-							...initial,
-							[dotAnotation]: resultRecursive
-						};
-						break;
-				}
-			}
-		}
+        switch (typeof resultRecursive) {
+          case 'object':
+            initial = {
+              ...initial,
+              ...resultRecursive
+            };
+            break;
+          case 'number':
+            const dotNotation = parentName
+              ? parentName + '.' + selection.name.value
+              : selection.name.value;
+            initial = {
+              ...initial,
+              [dotNotation]: resultRecursive
+            };
+            break;
+        }
+      }
+    }
 
-		if (Object.keys(initial).length === 0) {
-			return 1;
-		}
+    if (Object.keys(initial).length === 0) {
+      return 1;
+    }
 
-		return initial;
-	}
+    return initial;
+  }
 }
 
 /**
@@ -113,7 +108,7 @@ function getFields(field, initial, parentName, variableValues) {
  * @returns
  */
 function deleteFields(fieldNodeMapped, excludeFields) {
-	return _.omit(fieldNodeMapped, excludeFields);
+  return _.omit(fieldNodeMapped, excludeFields);
 }
 
 /**
@@ -127,15 +122,15 @@ function deleteFields(fieldNodeMapped, excludeFields) {
  * @returns
  */
 function getFieldNames(info, options = {}) {
-	const { fieldNodes, variableValues } = info;
-	const { excludeFields = [] } = options;
+  const { fieldNodes, variableValues } = info;
+  const { excludeFields = [] } = options;
 
-	let fieldNodeMapped = getFields(fieldNodes[0], {}, null, variableValues);
-	fieldNodeMapped = deleteFields(fieldNodeMapped, excludeFields);
+  let fieldNodeMapped = getFields(fieldNodes[0], {}, null, variableValues);
+  fieldNodeMapped = deleteFields(fieldNodeMapped, excludeFields);
 
-	return fieldNodeMapped;
+  return fieldNodeMapped;
 }
 
 module.exports = {
-	getFieldNames
+  getFieldNames
 };
