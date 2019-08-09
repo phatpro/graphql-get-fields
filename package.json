@@ -17,7 +17,7 @@
     "fields",
     "graphql"
   ],
-  "author": "^^",
+  "author": "phatpro", 
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/phatpro/graphql-get-fields/issues"
